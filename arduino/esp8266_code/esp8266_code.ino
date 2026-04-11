@@ -57,7 +57,8 @@ void loop() {
     previousMillis = currentMillis;
 
     if (WiFi.status() == WL_CONNECTED) {
-      WiFiClient client;
+      WiFiClientSecure client;
+      client.setInsecure(); // SSL sertifikasını doğrulamadan (Render/HTTPS için) bağlantı sağlar
       HTTPClient http;
 
       http.begin(client, serverAddress);
@@ -67,20 +68,31 @@ void loop() {
       StaticJsonDocument<200> docOut;
       docOut["voltage"] = v;
       docOut["current"] = i;
+      
+      // Batarya Yüzdesi Hesaplama (12V Sistem Varsayımı)
+      float battPerc = 0;
+      if (v > 12.6) battPerc = 100;
+      else if (v < 10.5) battPerc = 0;
+      else battPerc = (v - 10.5) / (12.6 - 10.5) * 100;
+      docOut["batteryPercentage"] = battPerc;
 
       String requestBody;
       serializeJson(docOut, requestBody);
 
       // Veriyi Gönder
+      Serial.println("Sunucuya veri gonderiliyor...");
       int httpResponseCode = http.POST(requestBody);
 
       // Yanıtı Kontrol Et
       if (httpResponseCode > 0) {
         String response = http.getString();
-        // Gerekirse sunucu yanıtını burada işleyebilirsiniz
+        Serial.print("Sunucu Yaniti (HTTP ");
+        Serial.print(httpResponseCode);
+        Serial.print("): ");
+        Serial.println(response);
       } else {
-        Serial.print("Hata Kodu: ");
-        Serial.println(httpResponseCode);
+        Serial.print("HTTPS Baglanti Hatasi: ");
+        Serial.println(http.errorToString(httpResponseCode).c_str());
       }
       
       http.end();
