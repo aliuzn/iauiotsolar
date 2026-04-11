@@ -12,7 +12,7 @@ const char* serverAddress = "https://iauiotsolar.onrender.com/api/esp/data";
 
 // --- Zamanlama Değişkenleri ---
 unsigned long previousMillis = 0;
-const long httpInterval = 3000; // 3 saniyede bir veri gönder
+const long httpInterval = 1000; // 1 saniyede bir veri gönderip, röle kontrolünü kontrol et.
 
 // --- Sensör Verileri ---
 float v = 0.0;
@@ -57,10 +57,17 @@ void loop() {
     previousMillis = currentMillis;
 
     if (WiFi.status() == WL_CONNECTED) {
-      WiFiClientSecure client;
-      client.setInsecure(); // SSL sertifikasını doğrulamadan (Render/HTTPS için) bağlantı sağlar
-      HTTPClient http;
+      // Değişkenleri static yaparak TSL/TCP bağlantısının her döngüde yeniden kurulmasını (1-2 sn gecikme) engelliyoruz
+      static WiFiClientSecure client;
+      static bool clientInsecureSet = false;
+      if (!clientInsecureSet) {
+        client.setInsecure(); // Sadece ilk seferde ayarla
+        clientInsecureSet = true;
+      }
+      
+      static HTTPClient http;
 
+      http.setReuse(true); // Keep-Alive bağlantıyı zorla (Render destekler)
       http.begin(client, serverAddress);
       http.addHeader("Content-Type", "application/json");
 
