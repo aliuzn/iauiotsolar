@@ -4,11 +4,11 @@
 #include <ArduinoJson.h>
 
 // --- WiFi Ayarları ---
-const char* ssid = "Zyxel_5091";
-const char* password = "fxyw123a+";
+const char* ssid = "pixel";
+const char* password = "12312312";
 
 // --- Sunucu Ayarları ---
-const char* serverAddress = "http://192.168.1.100:3000/api/esp/data";
+const char* serverAddress = "https://iauiotsolar.onrender.com/api/esp/data";
 
 // --- Zamanlama Değişkenleri ---
 unsigned long previousMillis = 0;
