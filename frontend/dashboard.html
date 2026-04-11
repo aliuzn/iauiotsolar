@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Güneş Enerjisi İzleme - Dashboard</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="dashboard-body">
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <span>Solar İzleme Merkezi</span>
+        </div>
+        <div class="nav-actions">
+            <span class="user-badge" id="welcomeUser">Hoşgeldin, Yükleniyor...</span>
+            <a href="profile.html" class="btn outline-btn" style="text-decoration:none;">Profil</a>
+            <button id="logoutBtn" class="btn outline-btn">Çıkış Yap</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="dashboard-container">
+        <!-- Section: Key Metrics -->
+        <section class="metrics-grid">
+            <!-- Voltaj Gauge -->
+            <div class="metric-card glass-panel gauge-card">
+                <div class="gauge-header">
+                    <div class="metric-icon blue-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                        </svg>
+                    </div>
+                    <h3>Panel Voltajı</h3>
+                </div>
+                <div class="gauge-body">
+                    <svg viewBox="0 0 100 55" class="gauge-svg">
+                        <path class="gauge-bg" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke-width="8"
+                            stroke-linecap="round" />
+                        <path class="gauge-fill" id="gaugeVoltageDraw" d="M 10 50 A 40 40 0 0 1 90 50" fill="none"
+                            stroke="#60a5fa" stroke-width="8" stroke-linecap="round" stroke-dasharray="125.66"
+                            stroke-dashoffset="125.66" />
+                    </svg>
+                    <div class="gauge-center">
+                        <div class="metric-value"><span id="valVoltage">0.0</span></div>
+                        <small>Volt</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Akım Gauge -->
+            <div class="metric-card glass-panel gauge-card">
+                <div class="gauge-header">
+                    <div class="metric-icon orange-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="1" x2="12" y2="23"></line>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        </svg>
+                    </div>
+                    <h3>Panel Akımı</h3>
+                </div>
+                <div class="gauge-body">
+                    <svg viewBox="0 0 100 55" class="gauge-svg">
+                        <path class="gauge-bg" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke-width="8"
+                            stroke-linecap="round" />
+                        <path class="gauge-fill" id="gaugeCurrentDraw" d="M 10 50 A 40 40 0 0 1 90 50" fill="none"
+                            stroke="#fbbf24" stroke-width="8" stroke-linecap="round" stroke-dasharray="125.66"
+                            stroke-dashoffset="125.66" />
+                    </svg>
+                    <div class="gauge-center">
+                        <div class="metric-value"><span id="valCurrent">0.0</span></div>
+                        <small>Amper</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Güç Gauge -->
+            <div class="metric-card glass-panel gauge-card">
+                <div class="gauge-header">
+                    <div class="metric-icon green-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                    </div>
+                    <h3>Anlık Güç</h3>
+                </div>
+                <div class="gauge-body">
+                    <svg viewBox="0 0 100 55" class="gauge-svg">
+                        <path class="gauge-bg" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke-width="8"
+                            stroke-linecap="round" />
+                        <path class="gauge-fill" id="gaugePowerDraw" d="M 10 50 A 40 40 0 0 1 90 50" fill="none"
+                            stroke="#34d399" stroke-width="8" stroke-linecap="round" stroke-dasharray="125.66"
+                            stroke-dashoffset="125.66" />
+                    </svg>
+                    <div class="gauge-center">
+                        <div class="metric-value"><span id="valPower">0.0</span></div>
+                        <small>Watt</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Batarya Göstergesi -->
+            <div class="metric-card glass-panel gauge-card">
+                <div class="gauge-header">
+                    <div class="metric-icon purple-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="1" y="6" width="18" height="12" rx="2" ry="2"></rect>
+                            <line x1="23" y1="13" x2="23" y2="11"></line>
+                        </svg>
+                    </div>
+                    <h3>Batarya Durumu</h3>
+                </div>
+                <div class="battery-body">
+                    <div class="battery-container">
+                        <div class="battery-level" id="batteryLevelIndicator"></div>
+                    </div>
+                    <div class="battery-nub"></div>
+                </div>
+                <div class="battery-text">
+                    <div class="metric-value"><span id="valBattery">0</span></div>
+                    <small>%</small>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Charts & Controls -->
+        <section class="charts-controls-grid">
+            <div class="chart-container glass-panel">
+                <div class="card-header">
+                    <h2>Canlı Güç Tüketim Grafiği</h2>
+                    <span class="status-indicator">● Canlı Veri</span>
+                </div>
+                <canvas id="powerChart"></canvas>
+            </div>
+
+            <div class="control-panel glass-panel">
+                <div class="card-header">
+                    <h2>Röle Kontrol Sistemi</h2>
+                </div>
+                <div class="relay-status">
+                    <div class="status-icon" id="relayStatusIcon">
+                        <!-- Switch Icon -->
+                    </div>
+                    <div>
+                        <p class="status-label">Mevcut Durum</p>
+                        <h3 id="relayStatusText">KAPALI</h3>
+                    </div>
+                </div>
+
+                <p class="control-desc">220V cihazlara giden enerjiyi bağlanan röle üzerinden açıp kapatmak için
+                    aşağıdaki butonu kullanın.</p>
+
+                <button id="toggleRelayBtn" class="toggle-btn off">
+                    <span class="btn-text">Röleyi AÇ</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Section: Secondary Charts (Battery) -->
+        <section style="margin-top: 20px;">
+            <div class="chart-container glass-panel">
+                <div class="card-header">
+                    <h2>Pil Doluluk Oranı Zaman Çizelgesi</h2>
+                    <span class="status-indicator">● Canlı Veri</span>
+                </div>
+                <canvas id="batteryChart"></canvas>
+            </div>
+        </section>
+    </main>
+
+    <!-- Script -->
+    <script src="app.js"></script>
+</body>
+
+</html>

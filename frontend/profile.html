@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Güneş Enerjisi İzleme - Profil</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="dashboard-body">
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <span>Solar İzleme Merkezi</span>
+        </div>
+        <div class="nav-actions">
+            <a href="dashboard.html" class="btn outline-btn" style="text-decoration:none;">Dashboard'a Dön</a>
+            <button id="logoutBtnProfile" class="btn outline-btn"
+                style="border-color: var(--danger); color: var(--danger);">Çıkış Yap</button>
+        </div>
+    </nav>
+
+    <main class="dashboard-container">
+        <div class="card-header" style="margin-bottom: 24px;">
+            <h2>Profil Yönetimi</h2>
+        </div>
+
+        <section class="charts-controls-grid" style="grid-template-columns: 1fr 2fr;">
+            <!-- Profil Fotoğrafı Kısmı -->
+            <div class="glass-panel"
+                style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px;">
+                <div
+                    style="width: 120px; height: 120px; border-radius: 50%; background: var(--accent-color); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: var(--glow-shadow);">
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+                <h3 id="displayFullName" style="margin-bottom: 5px;">Yükleniyor...</h3>
+                <p id="displayEmail" style="color: var(--text-secondary); font-size: 14px;">yükleniyor...</p>
+                <button class="btn outline-btn" style="margin-top: 20px; width: 100%;">Fotoğrafı Değiştir</button>
+            </div>
+
+            <!-- Form Kısmı -->
+            <div class="glass-panel">
+                <form id="profileForm">
+                    <h3
+                        style="margin-bottom: 20px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px;">
+                        Kişisel Bilgiler</h3>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <label for="fullName">Ad Soyad</label>
+                            <input type="text" id="fullName" placeholder="Ad Soyad" required>
+                        </div>
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <label for="email">E-posta Adresi</label>
+                            <input type="email" id="email" placeholder="ornek@mail.com" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="profileUsername">Kullanıcı Adı</label>
+                        <input type="text" id="profileUsername" placeholder="Kullanıcı Adı" required>
+                    </div>
+
+                    <h3
+                        style="margin-top: 40px; margin-bottom: 20px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px;">
+                        Şifre Değiştirme</h3>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 15px;">Şifrenizi değiştirmek
+                        istemiyorsanız aşağıdaki alanları boş bırakabilirsiniz.</p>
+
+                    <div class="input-group">
+                        <label for="oldPassword">Eski Şifreniz</label>
+                        <input type="password" id="oldPassword" placeholder="Mevcut Şifreniz">
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <label for="newPassword">Yeni Şifre</label>
+                            <input type="password" id="newPassword" placeholder="Yeni Şifre">
+                        </div>
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <label for="newPasswordConfirm">Yeni Şifre (Tekrar)</label>
+                            <input type="password" id="newPasswordConfirm" placeholder="Yeni Şifre Tekrar">
+                        </div>
+                    </div>
+
+                    <div id="profileResult" class="error-msg" style="margin-bottom: 20px; min-height: 20px;"></div>
+
+                    <div style="text-align: right;">
+                        <button type="submit" class="btn primary-btn"
+                            style="width: auto; padding: 12px 30px;">Değişiklikleri Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Script -->
+    <script src="app.js"></script>
+</body>
+
+</html>

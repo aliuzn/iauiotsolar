@@ -1,0 +1,145 @@
+#include <Wire.h> 
+#include <LiquidCrystal_I2C.h>
+#include <SoftwareSerial.h>
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+SoftwareSerial espSerial(10, 11); 
+const long interval = 2000; 
+// -------- PINLER --------
+const int PanelPin = A0;
+const int Panel_Voltage_sensorPin = A1;
+
+// -------- SABİTLER --------
+const float Vref = 5.0;
+const float sensitivity = 0.1; // ACS712 (20A için 0.1)
+
+// -------- DEĞİŞKENLER --------
+float offsetVoltage = 0;
+float Panel_voltage = 0;
+float current = 0;
+float Panel_Power = 0;
+
+// -------- SETUP --------
+void setup() {
+  Serial.begin(9600);
+  espSerial.begin(9600); 
+  lcd.begin();
+  lcd.backlight();
+
+  lcd.setCursor(4,0);
+  lcd.print("IoT Solar");
+  lcd.setCursor(5,1);
+  lcd.print("Monitor");
+  delay(2000);
+
+  lcd.clear();
+  lcd.setCursor(2,0);
+  lcd.print("Calibration");
+  delay(2000);
+
+  Serial.println("Calibration...");
+  delay(2000);
+
+  offsetVoltage = calibrate();
+
+  Serial.print("Offset: ");
+  Serial.println(offsetVoltage, 3);
+
+  lcd.clear();
+}
+
+// -------- GERİLİM OKUMA --------
+void voltage_Panel(){
+  int value_Panel = analogRead(Panel_Voltage_sensorPin);
+  Panel_voltage = value_Panel * (25.0 / 1023.0); // 0-25V
+
+  Serial.print("Gerilim: ");
+  Serial.print(Panel_voltage);
+  Serial.println(" V");
+}
+
+// -------- AKIM OKUMA --------
+void Current_Panel(){
+  current = readCurrentFiltered();
+
+  Serial.print("Akım: ");
+  Serial.print(current, 2);
+  Serial.println(" A");
+}
+
+// -------- GÜÇ HESABI --------
+void Power(){
+  Panel_Power = Panel_voltage * current;
+
+  Serial.print("Guc: ");
+  Serial.print(Panel_Power);
+  Serial.println(" W");
+}
+
+// -------- LCD GÖSTERİM --------
+void displayLCD(){
+  lcd.clear();
+
+  lcd.setCursor(0,0);
+  lcd.print("V:");
+  lcd.print(Panel_voltage,1);
+  lcd.print("V");
+
+  lcd.setCursor(9,0);
+  lcd.print("I:");
+  lcd.print(current,1);
+  lcd.print("A");
+
+  lcd.setCursor(0,1);
+  lcd.print("P:");
+  lcd.print(Panel_Power,1);
+  lcd.print("W");
+}
+
+// -------- KALİBRASYON --------
+float calibrate() {
+  long sum = 0;
+  int N = 1000;
+
+  for (int i = 0; i < N; i++) {
+    sum += analogRead(PanelPin);
+    delay(1);
+  }
+
+  float avg = sum / (float)N;
+  return avg * (Vref / 1023.0);
+}
+
+// -------- FİLTRELİ AKIM --------
+float readCurrentFiltered() {
+  long sum = 0;
+  int N = 200;
+
+  for (int i = 0; i < N; i++) {
+    sum += analogRead(PanelPin);
+  }
+
+  float avg = sum / (float)N;
+  float voltage = avg * (Vref / 1023.0);
+
+  float currentValue = (voltage - offsetVoltage) / sensitivity;
+
+  // Gürültü temizleme
+  if (abs(currentValue) < 0.05) currentValue = 0;
+
+  return currentValue;
+}
+
+// -------- LOOP --------
+void loop() {
+
+  voltage_Panel();
+  Current_Panel();
+  Power();
+  displayLCD();
+    String dataString = "V:" + String(Panel_voltage, 2) + ";I:" + String(current, 2)+ ";\n";
+    espSerial.print(dataString);
+    
+    Serial.print("Gonderilen: ");
+    Serial.println(dataString);
+  delay(2000);
+}
