@@ -4,9 +4,12 @@
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 SoftwareSerial espSerial(10, 11); 
 const long interval = 2000; 
+unsigned long previousMillis = 0;
+
 // -------- PINLER --------
 const int PanelPin = A0;
 const int Panel_Voltage_sensorPin = A1;
+const int relayPin = 4; // Role pini eklendi
 
 // -------- SABİTLER --------
 const float Vref = 5.0;
@@ -45,6 +48,9 @@ void setup() {
   Serial.println(offsetVoltage, 3);
 
   lcd.clear();
+
+  pinMode(relayPin, OUTPUT);
+  digitalWrite(relayPin, LOW); // Role baslangicta KAPALI
 }
 
 // -------- GERİLİM OKUMA --------
@@ -131,15 +137,36 @@ float readCurrentFiltered() {
 
 // -------- LOOP --------
 void loop() {
+  unsigned long currentMillis = millis();
 
-  voltage_Panel();
-  Current_Panel();
-  Power();
-  displayLCD();
+  // 1. Sensörleri Okuma ve Gönderme (2 saniyede bir)
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+
+    voltage_Panel();
+    Current_Panel();
+    Power();
+    displayLCD();
+    
     String dataString = "V:" + String(Panel_voltage, 2) + ";I:" + String(current, 2)+ ";\n";
     espSerial.print(dataString);
     
     Serial.print("Gonderilen: ");
     Serial.println(dataString);
-  delay(2000);
+  }
+
+  // 2. ESP8266'dan Gelen Komutları Dinleme
+  if (espSerial.available()) {
+    String inData = espSerial.readStringUntil('\n');
+    inData.trim();
+    
+    if (inData == "R1") {
+      digitalWrite(relayPin, HIGH); // Roleyi AC (Aktif Yüksek)
+      Serial.println("Komut Alindi: Role ACIK");
+    } 
+    else if (inData == "R0") {
+      digitalWrite(relayPin, LOW);  // Roleyi KAPAT (Aktif Düşük)
+      Serial.println("Komut Alindi: Role KAPALI");
+    }
+  }
 }

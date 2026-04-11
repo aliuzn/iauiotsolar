@@ -90,6 +90,20 @@ void loop() {
         Serial.print(httpResponseCode);
         Serial.print("): ");
         Serial.println(response);
+
+        // Sunucudan dönen JSON'u parse et (Arayüzden gelen röle komutunu okumak için)
+        StaticJsonDocument<200> docIn;
+        DeserializationError error = deserializeJson(docIn, response);
+        if (!error) {
+          if (docIn.containsKey("relay")) {
+            int relayState = docIn["relay"]; // 1 = AÇ, 0 = KAPAT
+            if (relayState == 1) {
+              Serial.println("R1"); // UNO'ya bildir
+            } else {
+              Serial.println("R0"); // UNO'ya bildir
+            }
+          }
+        }
       } else {
         Serial.print("HTTPS Baglanti Hatasi: ");
         Serial.println(http.errorToString(httpResponseCode).c_str());
