@@ -178,6 +178,36 @@ if (isDashboardPage) {
 
     // Veri Güncelleme Mantığı
     let relayCurrentTarget = 0;
+    
+    let lastKnownDataTimestamp = null;
+    let lastDataClientTime = Date.now();
+
+    function setSystemStatus(isOffline) {
+        const statusBadge = document.getElementById('connectionStatus');
+        const chartIndicators = document.querySelectorAll('.status-indicator');
+        
+        if (isOffline) {
+            if (statusBadge) {
+                statusBadge.className = "status-badge offline";
+                statusBadge.innerHTML = "❌ Veri Akışı Kesildi";
+            }
+            chartIndicators.forEach(el => {
+                el.innerHTML = "● Bağlantı Bekleniyor";
+                el.style.color = "var(--danger)";
+            });
+            document.querySelectorAll('.gauge-card').forEach(card => card.classList.add('offline-card'));
+        } else {
+            if (statusBadge) {
+                statusBadge.className = "status-badge online";
+                statusBadge.innerHTML = "● Canlı Bağlantı";
+            }
+            chartIndicators.forEach(el => {
+                el.innerHTML = "● Canlı Veri";
+                el.style.color = "var(--success)";
+            });
+            document.querySelectorAll('.gauge-card').forEach(card => card.classList.remove('offline-card'));
+        }
+    }
 
     async function fetchDashboardData() {
         try {
@@ -196,27 +226,48 @@ if (isDashboardPage) {
             }
 
             const data = await res.json();
+            
+            // Çevrimdışı kontrolü: Gelen nesnedeki verinin timestamp değeri serverdan gelir.
+            // Eğer yeni gelen veri eski verinin aynısıysa cihazın bağlantısı kopmuş demektir.
+            if (data.timestamp !== lastKnownDataTimestamp) {
+                lastKnownDataTimestamp = data.timestamp;
+                lastDataClientTime = Date.now();
+            }
+            
+            const timeSinceLastUpdate = (Date.now() - lastDataClientTime) / 1000;
+            const isOffline = timeSinceLastUpdate > 15; // 15s yeni veri gelmezse offline mod
+            
+            setSystemStatus(isOffline);
 
-            document.getElementById('valVoltage').innerText = Number(data.voltage).toFixed(2);
-            document.getElementById('valCurrent').innerText = Number(data.current).toFixed(2);
-            document.getElementById('valPower').innerText = Number(data.power).toFixed(2);
-            document.getElementById('valBattery').innerText = Number(data.batteryPercentage).toFixed(0);
+            if (!isOffline) {
+                document.getElementById('valVoltage').innerText = Number(data.voltage).toFixed(2);
+                document.getElementById('valCurrent').innerText = Number(data.current).toFixed(2);
+                document.getElementById('valPower').innerText = Number(data.power).toFixed(2);
+                document.getElementById('valBattery').innerText = Number(data.batteryPercentage).toFixed(0);
 
-            // Update Gauges (Max limits: Voltaj 50V, Akım 20A, Güç 1000W)
-            updateGauge('gaugeVoltageDraw', data.voltage, 50);
-            updateGauge('gaugeCurrentDraw', data.current, 20);
-            updateGauge('gaugePowerDraw', data.power, 1000);
+                // Update Gauges
+                updateGauge('gaugeVoltageDraw', data.voltage, 50);
+                updateGauge('gaugeCurrentDraw', data.current, 20);
+                updateGauge('gaugePowerDraw', data.power, 1000);
 
-            // Update Battery Indicator
-            updateBatteryIndicator(data.batteryPercentage);
+                // Update Battery Indicator
+                updateBatteryIndicator(data.batteryPercentage);
 
-            // Röle Durumunu Güncelle (DOM)
-            // Eğer relayTarget değişmişse ve arayüzde biz bu bilgiyi göstermek istiyorsak:
-            updateRelayUI(data.relayTarget);
+                // Röle Durumunu Güncelle (DOM)
+                updateRelayUI(data.relayTarget);
 
-            // Grafikleri Güncelle
-            updateChartData(data.power);
-            updateBatteryChartData(data.batteryPercentage);
+                // Grafikleri Güncelle
+                updateChartData(data.power);
+                updateBatteryChartData(data.batteryPercentage);
+            } else {
+                document.getElementById('valVoltage').innerText = "--";
+                document.getElementById('valCurrent').innerText = "--";
+                document.getElementById('valPower').innerText = "--";
+                
+                updateGauge('gaugeVoltageDraw', 0, 50);
+                updateGauge('gaugeCurrentDraw', 0, 20);
+                updateGauge('gaugePowerDraw', 0, 1000);
+            }
 
         } catch (error) {
             console.error("Veri çekme hatası:", error);
