@@ -17,6 +17,7 @@ const long httpInterval = 1000; // 1 saniyede bir veri gönderip, röle kontrol�
 // --- Sensör Verileri ---
 float v = 0.0;
 float i = 0.0;
+int b = 0;
 
 void setup() {
   // UNO ile haberleşme hızı. UNO tarafında da Serial.begin(9600) olmalı.
@@ -75,13 +76,7 @@ void loop() {
       StaticJsonDocument<200> docOut;
       docOut["voltage"] = v;
       docOut["current"] = i;
-      
-      // Batarya Yüzdesi Hesaplama (12V Sistem Varsayımı)
-      float battPerc = 0;
-      if (v > 12.6) battPerc = 100;
-      else if (v < 10.5) battPerc = 0;
-      else battPerc = (v - 10.5) / (12.6 - 10.5) * 100;
-      docOut["batteryPercentage"] = battPerc;
+      docOut["batteryPercentage"] = b;
 
       String requestBody;
       serializeJson(docOut, requestBody);
@@ -125,35 +120,42 @@ void loop() {
 
 // --- Veri Parçalama Fonksiyonu ---
 void parseArduinoData(String data) {
-  // Beklenen format: "V:12.50;I:1.20;"
+  // Beklenen format: "V:12.50;I:1.20;B:85;"
   
   int vIndex = data.indexOf("V:");
   int iIndex = data.indexOf(";I:");
+  int bIndex = data.indexOf(";B:");
   int lastSemiColon = data.lastIndexOf(";");
 
   // Gerekli tüm belirteçler mevcut mu kontrol et
-  if (vIndex != -1 && iIndex != -1) {
+  if (vIndex != -1 && iIndex != -1 && bIndex != -1) {
     
     // Voltaj değerini ayıkla (V: ile ;I: arası)
     String vStr = data.substring(vIndex + 2, iIndex);
     
-    // Akım değerini ayıkla (;I: ile sondaki ; arası)
-    String iStr = "";
-    if (lastSemiColon > iIndex + 3) {
-      iStr = data.substring(iIndex + 3, lastSemiColon);
+    // Akım değerini ayıkla (;I: ile ;B: arası)
+    String iStr = data.substring(iIndex + 3, bIndex);
+
+    // Batarya değerini ayıkla (;B: ile sondaki ; arası)
+    String bStr = "";
+    if (lastSemiColon > bIndex + 3) {
+      bStr = data.substring(bIndex + 3, lastSemiColon);
     } else {
-      iStr = data.substring(iIndex + 3);
+      bStr = data.substring(bIndex + 3);
     }
 
     v = vStr.toFloat();
     i = iStr.toFloat();
+    b = bStr.toInt();
 
     // Debug: Gelen veriyi ESP'nin bağlı olduğu bilgisayardan görmek isterseniz:
     /*
     Serial.print("Parsed -> V: ");
     Serial.print(v);
     Serial.print(" I: ");
-    Serial.println(i);
+    Serial.print(i);
+    Serial.print(" B: ");
+    Serial.println(b);
     */
   }
 }

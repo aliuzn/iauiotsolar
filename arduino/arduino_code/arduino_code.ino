@@ -9,6 +9,7 @@ unsigned long previousMillis = 0;
 // -------- PINLER --------
 const int PanelPin = A0;
 const int Panel_Voltage_sensorPin = A1;
+const int Battery_Voltage_sensorPin = A2; // Batarya voltajı (0-25V)
 const int relayPin = 4; // Role pini eklendi
 
 // -------- SABİTLER --------
@@ -20,6 +21,8 @@ float offsetVoltage = 0;
 float Panel_voltage = 0;
 float current = 0;
 float Panel_Power = 0;
+float Battery_voltage = 0; // Akü Voltajı
+int batteryPerc = 0; // Akü Yüzdesi
 
 // -------- SETUP --------
 void setup() {
@@ -58,9 +61,26 @@ void voltage_Panel(){
   int value_Panel = analogRead(Panel_Voltage_sensorPin);
   Panel_voltage = value_Panel * (25.0 / 1023.0); // 0-25V
 
-  Serial.print("Gerilim: ");
+  Serial.print("Panel Gerilimi: ");
   Serial.print(Panel_voltage);
   Serial.println(" V");
+}
+
+void voltage_Battery(){
+  int value_Battery = analogRead(Battery_Voltage_sensorPin);
+  Battery_voltage = value_Battery * (25.0 / 1023.0); // 0-25V modül
+
+  // Basit Pil Yüzdesi Hesabı (12V Kurşun-Asit: 10.5V ile 12.6V arası)
+  float perc = ((Battery_voltage - 10.5) / (12.6 - 10.5)) * 100.0;
+  if (perc > 100) perc = 100;
+  if (perc < 0) perc = 0;
+  batteryPerc = (int)perc;
+
+  Serial.print("Akü Gerilimi: ");
+  Serial.print(Battery_voltage);
+  Serial.print(" V (Doluluk: %");
+  Serial.print(batteryPerc);
+  Serial.println(")");
 }
 
 // -------- AKIM OKUMA --------
@@ -144,11 +164,13 @@ void loop() {
     previousMillis = currentMillis;
 
     voltage_Panel();
+    voltage_Battery(); // Batarya voltajını da okuyoruz
     Current_Panel();
     Power();
     displayLCD();
     
-    String dataString = "V:" + String(Panel_voltage, 2) + ";I:" + String(current, 2)+ ";\n";
+    // ESP'ye gönderilecek veriye ;B: parametresini ekliyoruz
+    String dataString = "V:" + String(Panel_voltage, 2) + ";I:" + String(current, 2) + ";B:" + String(batteryPerc) + ";\n";
     espSerial.print(dataString);
     
     Serial.print("Gonderilen: ");
