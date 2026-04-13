@@ -147,7 +147,14 @@ app.post('/api/profile', authenticateToken, (req, res) => {
 // 4. ESP8266 Sensör Verisi Ekler ve Röle Durumunu Alır
 // Not: ESP8266 basit HTTP POST yapar, karmaşık authentication yerine statik api-key eklenebilir.
 app.post('/api/esp/data', (req, res) => {
-    const { voltage, current, batteryPercentage } = req.body;
+    const { voltage, current, batteryPercentage, override, overrideState } = req.body;
+
+    // Eğer donanımsal bir butonla röle durumu değiştirildiyse (override işlemi yapıldıysa) web sitesindeki durumu da ona göre güncelliyoruz.
+    if (override === true) {
+        relayTargetState = overrideState;
+        actualRelayState = overrideState;
+        console.log(`Donanim uzerinden role degisimi algilandi! Yeni Durum: ${relayTargetState}`);
+    }
 
     // Verileri güncelle
     latestSensorData.voltage = typeof voltage === 'number' ? voltage : parseFloat(voltage) || 0;

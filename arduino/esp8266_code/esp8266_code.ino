@@ -4,8 +4,8 @@
 #include <ArduinoJson.h>
 
 // --- WiFi Ayarları ---
-const char* ssid = "pixel";
-const char* password = "12312312";
+const char* ssid = "Ali iPhone’u";
+const char* password = "123456789";
 
 // --- Sunucu Ayarları ---
 const char* serverAddress = "https://iauiotsolar.onrender.com/api/esp/data";

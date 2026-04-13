@@ -183,11 +183,11 @@ void loop() {
     inData.trim();
     
     if (inData == "R1") {
-      digitalWrite(relayPin, HIGH); // Roleyi AC (Aktif Yüksek)
+      digitalWrite(relayPin, LOW); // Roleyi AC (Aktif Yüksek)
       Serial.println("Komut Alindi: Role ACIK");
     } 
     else if (inData == "R0") {
-      digitalWrite(relayPin, LOW);  // Roleyi KAPAT (Aktif Düşük)
+      digitalWrite(relayPin, HIGH);  // Roleyi KAPAT (Aktif Düşük)
       Serial.println("Komut Alindi: Role KAPALI");
     }
   }
